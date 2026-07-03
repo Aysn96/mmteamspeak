@@ -306,11 +306,12 @@
   .lb-head .lb-role{color:#CDBFF0;font-size:14.5px}
   .lb-reactions{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
   .react-btn{position:relative;overflow:hidden;border:1px solid var(--line);background:var(--panel2);
-    color:var(--ink);border-radius:999px;padding:6px 12px;font-size:15px;font-weight:600;
-    display:inline-flex;align-items:center;gap:7px;transition:transform .12s ease,border-color .15s,background .15s}
+    color:var(--ink);border-radius:999px;padding:6px 12px;font-size:15px;font-weight:600;min-width:44px;
+    display:inline-flex;align-items:center;justify-content:center;gap:7px;transition:transform .12s ease,border-color .15s,background .15s}
   .react-btn:hover{border-color:var(--violet);transform:translateY(-1px)}
   .react-btn.on{background:rgba(155,77,255,.18);border-color:var(--violet)}
   .react-btn .rc{font-family:"Space Mono";font-size:12.5px;color:var(--violet-hi);min-width:6px}
+  .react-btn .rc:empty{display:none}
   .react-btn.pop{animation:reactPop .36s ease}
   @keyframes reactPop{40%{transform:scale(1.3)}}
   .lb-body{flex:1 1 auto;display:flex;flex-direction:column;min-height:0;border-top:1px solid var(--line)}
@@ -462,7 +463,15 @@
     .lb-top{grid-template-columns:1fr}
     .lb-photo{aspect-ratio:16/9}
     .lb-photo::after{background:linear-gradient(180deg,transparent 48%,rgba(13,7,22,.95))}
-    .lb-head{padding:16px 18px 12px}
+    .lb-head{padding:16px 18px 14px;align-items:center;text-align:center}
+    .lb-rank{align-self:center}
+    .lb-reactions{justify-content:center;gap:6px;margin-top:6px}
+    .react-btn{padding:6px 11px}
+    /* Mobile: ganze Karte scrollt (nicht nur die Kommentar-Box) → Bewertung, Kommentare & Composer alle erreichbar */
+    .lb-card{max-height:88dvh;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+    .lb-close{position:sticky;align-self:flex-end;top:10px;right:auto;margin:10px 12px -48px 0}
+    .lb-body{display:block;min-height:0}
+    .lb-comments{overflow:visible;min-height:0}
     .lb-comments,.lb-composer,.lb-comments-head,.lb-mode,.lb-rate{padding-left:18px;padding-right:18px}
     .rate-row{grid-template-columns:62px 1fr 24px 50px;gap:8px}
     .rate-row .rl{font-size:9px;letter-spacing:.06em}
@@ -470,7 +479,16 @@
   }
   @media(max-width:430px){
     #ticker-label{display:none}
-    .brand{font-size:12px}
+    .brand{font-size:11.5px}
+    /* HUD verdichten, damit "Regeln" nicht mehr abgeschnitten wird (header#hud überstimmt auch die Safe-Area-Regel) */
+    header#hud{gap:6px;padding-left:max(8px,env(safe-area-inset-left));padding-right:max(8px,env(safe-area-inset-right))}
+    .ticker{font-size:11px;padding:5px 9px;gap:6px;letter-spacing:.02em}
+    .ticker .tdot{width:6px;height:6px}
+    .hud-btn{padding:7px 8px;font-size:9.5px;letter-spacing:.05em}
+  }
+  @media(max-width:360px){
+    .brand{font-size:10.5px}
+    .hud-btn{padding:7px 7px;letter-spacing:.02em}
   }
   @media(max-width:380px){
     .tile{flex-basis:calc((100% - 16px)/3)}
@@ -516,7 +534,7 @@
     <h1 class="boot-logo"><span class="mm">MM</span></h1>
     <div class="boot-sub">Teamspeak</div>
     <div class="press" id="press">Press Start</div>
-    <div class="coin"><b>KLICK</b> TO CONTINUE &middot; oder <b>ENTER</b></div>
+    <div class="coin">INSERT <b>1 KEK</b> TO CONTINUE &middot; oder <b>ENTER</b></div>
   </div>
 </section>
 
