@@ -358,6 +358,39 @@
   .lb-mode{padding:8px 24px 0;font-size:10.5px;color:var(--muted);font-family:"Space Mono"}
   .lb-mode b{color:var(--violet-hi)}
 
+  /* ================= BEWERTUNG (Slider im Profil) ================= */
+  .stat.empty .sv{color:var(--muted)}
+  .lb-rate{flex:0 0 auto;border-top:1px solid var(--line);background:var(--panel2);padding:14px 24px 16px}
+  .lb-rate-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:13px}
+  .lb-rate-title{font-family:"Space Mono";font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--violet-hi)}
+  .lb-rate-sub{font-family:"Space Mono";font-size:10px;color:var(--muted);letter-spacing:.04em;white-space:nowrap}
+  .rate-rows{display:grid;gap:13px}
+  .rate-row{display:grid;grid-template-columns:82px 1fr 30px 64px;align-items:center;gap:10px}
+  .rate-row .rl{font-family:"Space Mono";font-size:10.5px;letter-spacing:.14em;color:var(--muted);
+    text-transform:uppercase;white-space:nowrap}
+  .rate-row .rv{font-family:"Space Mono";font-weight:700;font-size:13px;color:#fff;text-align:right;
+    font-variant-numeric:tabular-nums}
+  .rate-row .ra{font-family:"Space Mono";font-size:10px;color:var(--violet-hi);text-align:right;white-space:nowrap}
+  .rate-row .ra .rac{color:var(--muted)}
+  input.rs{-webkit-appearance:none;appearance:none;width:100%;height:18px;background:transparent;cursor:pointer;margin:0}
+  input.rs:focus{outline:none}
+  input.rs::-webkit-slider-runnable-track{height:9px;border-radius:99px;border:1px solid rgba(155,77,255,.22);
+    background:linear-gradient(90deg,var(--violet),var(--magenta)) left/var(--p,50%) 100% no-repeat,rgba(155,77,255,.12)}
+  input.rs::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:18px;height:18px;border-radius:50%;
+    background:#fff;border:2px solid var(--magenta);box-shadow:0 0 10px rgba(255,43,214,.6);margin-top:-6px;cursor:pointer}
+  input.rs::-moz-range-track{height:9px;border-radius:99px;border:1px solid rgba(155,77,255,.22);background:rgba(155,77,255,.12)}
+  input.rs::-moz-range-progress{height:9px;border-radius:99px;background:linear-gradient(90deg,var(--violet),var(--magenta))}
+  input.rs::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:#fff;border:2px solid var(--magenta);
+    box-shadow:0 0 10px rgba(255,43,214,.6);cursor:pointer}
+  input.rs:focus::-webkit-slider-thumb{box-shadow:0 0 0 4px rgba(255,43,214,.25),0 0 10px rgba(255,43,214,.6)}
+  .rate-send{margin-top:15px;width:100%;font-family:"Space Mono";font-weight:700;font-size:12px;letter-spacing:.12em;
+    text-transform:uppercase;color:#fff;background:linear-gradient(100deg,var(--violet),var(--magenta));padding:12px;
+    clip-path:polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px);
+    transition:transform .15s var(--ease),box-shadow .2s,opacity .15s,background .2s}
+  .rate-send:hover{transform:translateY(-1px);box-shadow:0 10px 28px rgba(255,43,214,.4)}
+  .rate-send:disabled{opacity:.55;transform:none;box-shadow:none}
+  .rate-send.saved{background:linear-gradient(100deg,var(--live),#2fae63);color:#06210f}
+
   /* ================= REGELN-MODAL ================= */
   .rules-card{position:relative;z-index:2;width:min(560px,94vw);padding:28px 26px 24px;
     border:1px solid rgba(155,77,255,.45);background:var(--panel);
@@ -376,6 +409,15 @@
     transition:transform .18s var(--ease),border-color .2s}
   .rules li:hover{transform:translateX(4px);border-left-color:var(--magenta)}
   .rules .n{font-family:"Space Mono";font-weight:700;font-size:12px;color:var(--violet-hi);margin-top:2px}
+
+  /* ================= BANNER-MODAL ================= */
+  .banner-card{position:relative;z-index:2;width:min(1160px,96vw);overflow:hidden;
+    border:1px solid rgba(155,77,255,.45);background:var(--panel);
+    clip-path:polygon(18px 0,100% 0,100% calc(100% - 18px),calc(100% - 18px) 100%,0 100%,0 18px);
+    box-shadow:0 40px 110px rgba(0,0,0,.75),0 0 70px rgba(155,77,255,.32);
+    transform:scale(.93) translateY(16px);transition:transform .35s cubic-bezier(.2,.85,.25,1)}
+  .lightbox.open .banner-card{transform:none}
+  .banner-full{width:100%;height:auto;display:block}
 
   /* ================= TOAST ================= */
   .toast{position:fixed;left:50%;bottom:calc(var(--bar-h) + 18px);transform:translateX(-50%) translateY(20px);
@@ -421,7 +463,10 @@
     .lb-photo{aspect-ratio:16/9}
     .lb-photo::after{background:linear-gradient(180deg,transparent 48%,rgba(13,7,22,.95))}
     .lb-head{padding:16px 18px 12px}
-    .lb-comments,.lb-composer,.lb-comments-head,.lb-mode{padding-left:18px;padding-right:18px}
+    .lb-comments,.lb-composer,.lb-comments-head,.lb-mode,.lb-rate{padding-left:18px;padding-right:18px}
+    .rate-row{grid-template-columns:62px 1fr 24px 50px;gap:8px}
+    .rate-row .rl{font-size:9px;letter-spacing:.06em}
+    .rate-row .ra{font-size:9px}
   }
   @media(max-width:430px){
     #ticker-label{display:none}
@@ -471,7 +516,7 @@
     <h1 class="boot-logo"><span class="mm">MM</span></h1>
     <div class="boot-sub">Teamspeak</div>
     <div class="press" id="press">Press Start</div>
-    <div class="coin">INSERT <b>1 KEK</b> TO CONTINUE &middot; oder <b>ENTER</b></div>
+    <div class="coin"><b>KLICK</b> TO CONTINUE &middot; oder <b>ENTER</b></div>
   </div>
 </section>
 
@@ -481,6 +526,7 @@
     <span class="brand">MM<span class="dot">.</span>TEAMSPEAK</span>
     <span class="ticker" id="ticker"><span class="tdot"></span><span id="ticker-label">BIS PRIMETIME</span>&nbsp;<b id="ticker-time">--:--:--</b></span>
     <span class="presence" id="presence"><span class="pdot"></span><b class="pcount">0</b>&nbsp;<span class="plabel">Kek online</span></span>
+    <button class="hud-btn" id="banner-btn" type="button">Banner</button>
     <button class="hud-btn" id="rules-btn" type="button">Regeln</button>
   </header>
 
@@ -537,6 +583,14 @@
       </div>
     </div>
     <div class="lb-body">
+      <div class="lb-rate" id="lb-rate">
+        <div class="lb-rate-head">
+          <span class="lb-rate-title">Deine Bewertung</span>
+          <span class="lb-rate-sub" id="lb-rate-mode"></span>
+        </div>
+        <div class="rate-rows" id="rate-rows"></div>
+        <button class="rate-send" id="rate-send" type="button">Bewertung abschicken</button>
+      </div>
       <div class="lb-comments-head">Kommentare</div>
       <div class="lb-comments" id="lb-comments"></div>
       <div class="lb-composer">
@@ -568,6 +622,15 @@
       <li><span class="n">02</span><span>Donnerstag Odeum. Keine Primetime</span></li>
       <li><span class="n">03</span><span>Nur Fraue rede, M&auml;nner rede net</span></li>
     </ul>
+  </div>
+</div>
+
+<!-- BANNER-MODAL -->
+<div id="bannerbox" class="lightbox" aria-hidden="true">
+  <div class="lb-backdrop" data-close></div>
+  <div class="banner-card" role="dialog" aria-modal="true" aria-label="MM Teamspeak Banner">
+    <button class="lb-close" data-close type="button" aria-label="Schließen">&times;</button>
+    <img class="banner-full" src="https://i.postimg.cc/662vwCtK/Chat-GPT-Image-4-Juni-2026-12-44-54.png" alt="MM Teamspeak Banner">
   </div>
 </div>
 
@@ -619,17 +682,27 @@
     boom:   function(){ tone(110,0,.3,.14,"sawtooth"); tone(55,.02,.4,.12,"sine"); }
   };
 
-  /* ================= GAG-STATS (deterministisch aus dem Namen) ================= */
-  var STAT_NAMES = ["AURA","RIZZ","LAUTSTÄRKE","ON-RATE","KEK-FAKTOR"];
-  function hash(s,seed){ var h=seed>>>0,i; for(i=0;i<s.length;i++){ h=Math.imul(h^s.charCodeAt(i),2654435761)>>>0; } return h; }
-  function statsFor(m){
-    var out=[], best=hash(m.name,7)%STAT_NAMES.length;
-    for(var i=0;i<STAT_NAMES.length;i++){
-      var v = 42 + (hash(m.name, 13+i*31) % 53);   /* 42..94 */
-      if(i===best) v = 96 + (hash(m.name,99) % 5); /* eine Parade-Disziplin: 96..100 */
-      out.push({ label:STAT_NAMES[i], val:v });
-    }
-    return out;
+  /* ================= STATS (Community-Bewertungen) ================= */
+  var STAT_NAMES = ["AURA","RIZZ","ON-RATE","KEK-FAKTOR"];
+  /* Anonyme, geraetegebundene Voter-ID: eine Stimme pro Person, jederzeit aenderbar */
+  var VOTER = lsGet("mm_voter","");
+  if(!VOTER){ VOTER = "v"+Date.now().toString(36)+Math.random().toString(36).slice(2,8); lsSet("mm_voter",VOTER); }
+  /* Rohzeilen (member,stat,value,voter) -> Schnitt + Anzahl + eigene Stimme */
+  function aggRatings(rows){
+    var sum={},cnt={},mine={};
+    (rows||[]).forEach(function(r){
+      sum[r.stat]=(sum[r.stat]||0)+r.value; cnt[r.stat]=(cnt[r.stat]||0)+1;
+      if(r.voter===VOTER) mine[r.stat]=r.value;
+    });
+    var avgs={},counts={};
+    STAT_NAMES.forEach(function(k){ if(cnt[k]){ avgs[k]=Math.round(sum[k]/cnt[k]); counts[k]=cnt[k]; } });
+    return {avgs:avgs,counts:counts,mine:mine};
+  }
+  /* Lokaler Fallback (nur dieses Geraet) als DB-aehnliche Zeilen */
+  function localRatingRows(member){
+    var mine=lsGet("mm_rate_"+member,{}), rows=[];
+    STAT_NAMES.forEach(function(k){ if(mine[k]!=null) rows.push({stat:k,value:mine[k],voter:VOTER}); });
+    return rows;
   }
 
   /* ================= DOM-REFS ================= */
@@ -681,29 +754,39 @@
     })();
   }
 
-  /* ================= STATS RENDERN ================= */
-  function renderStats(m){
-    var st=statsFor(m);
+  /* ================= STATS RENDERN (Community-Schnitt) ================= */
+  function renderStats(agg){
+    agg=agg||{}; var avgs=agg.avgs||{}, counts=agg.counts||{};
     stageStats.innerHTML="";
-    st.forEach(function(s){
+    var meta=STAT_NAMES.map(function(label){
+      var v=avgs[label]||0, n=counts[label]||0;
       var row=document.createElement("div");
-      row.className="stat"+(s.val>=96?" maxed":"");
-      row.innerHTML='<span class="sl">'+s.label+'</span>'+
+      row.className="stat"+(v>=96?" maxed":"")+(n?"":" empty");
+      row.title=n?(n+(n===1?" Bewertung":" Bewertungen")):"Noch nicht bewertet";
+      row.innerHTML='<span class="sl">'+label+'</span>'+
         '<span class="track"><span class="fill"></span></span>'+
-        '<span class="sv">0</span>';
+        '<span class="sv">'+(n?"0":"–")+'</span>';
       stageStats.appendChild(row);
+      return {val:v,n:n};
     });
     var fills=stageStats.querySelectorAll(".fill"), svs=stageStats.querySelectorAll(".sv");
-    if(hasGsap && !reduce){
-      st.forEach(function(s,i){
+    meta.forEach(function(s,i){
+      if(!s.n){ fills[i].style.width="0%"; svs[i].textContent="–"; return; }
+      if(hasGsap && !reduce){
         gsap.to(fills[i],{width:s.val+"%",duration:.7,delay:.12+i*.06,ease:"power3.out"});
         var o={v:0};
         gsap.to(o,{v:s.val,duration:.7,delay:.12+i*.06,ease:"power3.out",
           onUpdate:function(){ svs[i].textContent=Math.round(o.v); }});
-      });
-    } else {
-      st.forEach(function(s,i){ fills[i].style.width=s.val+"%"; svs[i].textContent=s.val; });
-    }
+      } else { fills[i].style.width=s.val+"%"; svs[i].textContent=s.val; }
+    });
+  }
+  /* Stage-Ratings laden (kleiner Cache, damit Hover nicht dauernd neu fetcht) */
+  var ratingsCache={};
+  function loadStageRatings(m){
+    store.listRatings(m.name).then(function(agg){
+      ratingsCache[m.name]=agg;
+      if(cur>=0 && MEMBERS[cur] && MEMBERS[cur].name===m.name) renderStats(agg);
+    }).catch(function(){});
   }
 
   /* ================= MEMBER AUSWÄHLEN (Glitch-Swap) ================= */
@@ -719,7 +802,8 @@
     scrambleTo(stageName,m.name.toUpperCase());
     stageImg.src=m.src; ghostMImg.src=m.src; ghostCImg.src=m.src;
     stageImg.alt=m.name;
-    renderStats(m);
+    renderStats(ratingsCache[m.name]);
+    loadStageRatings(m);
     if(!quiet){ try{ snd.move(); }catch(e){} }
     if(hasGsap && !reduce){
       gsap.killTweensOf([stagePhoto,ghostM,ghostC,stageScan,stageName,stageRole]);
@@ -752,7 +836,7 @@
   var COLS=3;
   window.addEventListener("keydown",function(e){
     if(!body.classList.contains("entered")) return;
-    if($("lightbox").classList.contains("open")||$("rulesbox").classList.contains("open")) return;
+    if($("lightbox").classList.contains("open")||$("rulesbox").classList.contains("open")||$("bannerbox").classList.contains("open")) return;
     var t=e.target; if(t && (t.tagName==="INPUT"||t.tagName==="TEXTAREA")) return;
     var i=cur;
     if(e.key==="ArrowRight"){ i=(cur+1)%N; }
@@ -941,11 +1025,27 @@
       var t=lsGet("mm_rx_"+member,{}); t[emoji]=(t[emoji]||0)+1; lsSet("mm_rx_"+member,t);
       return Promise.resolve();
     },
+    listRatings:function(member){
+      if(SHARED) return sb.from("ratings").select("stat,value,voter").eq("member",member)
+        .then(function(r){ return aggRatings(r.data||[]); });
+      return Promise.resolve(aggRatings(localRatingRows(member)));
+    },
+    setRating:function(member,vals){
+      if(SHARED){
+        var rows=STAT_NAMES.filter(function(k){ return vals[k]!=null; }).map(function(k){
+          return {member:member,stat:k,voter:VOTER,value:vals[k]};
+        });
+        return sb.from("ratings").upsert(rows,{onConflict:"member,stat,voter"})
+          .then(function(r){ if(r&&r.error) throw r.error; return r; });
+      }
+      lsSet("mm_rate_"+member,vals); return Promise.resolve();
+    },
     subscribe:function(member,cb){
       if(!SHARED) return function(){};
       var ch=sb.channel("mm-"+member)
         .on("postgres_changes",{event:"INSERT",schema:"public",table:"comments",filter:"member=eq."+member},cb)
         .on("postgres_changes",{event:"INSERT",schema:"public",table:"reactions",filter:"member=eq."+member},cb)
+        .on("postgres_changes",{event:"*",schema:"public",table:"ratings",filter:"member=eq."+member},cb)
         .subscribe();
       return function(){ try{ sb.removeChannel(ch); }catch(e){} };
     }
@@ -1007,6 +1107,13 @@
     var m=curMemberName;
     store.listReactions(m).then(function(rx){ if(curMemberName===m) renderReactions(rx); });
     store.listComments(m).then(function(cs){ if(curMemberName===m) renderComments(cs); });
+    store.listRatings(m).then(function(agg){
+      if(curMemberName!==m) return;
+      ratingsCache[m]=agg;
+      if(!ratePrefilled){ setSlidersFrom(agg.mine); ratePrefilled=true; }
+      updateRateAvgs(agg);
+      if(cur>=0 && MEMBERS[cur] && MEMBERS[cur].name===m) renderStats(agg);
+    }).catch(function(){});
   }
   function openProfile(){
     if(cur<0) return;
@@ -1017,6 +1124,8 @@
     lbRole.textContent=m.role;
     lbRank.textContent="#"+m.rank;
     lbReacts.innerHTML=""; lbComments.innerHTML="";
+    buildRatePanel(); ratePrefilled=false; resetRateSend();
+    rateMode.textContent=SHARED?"Community-Schnitt · live":"Nur auf diesem Gerät · siehe config.js";
     cpText.value=""; auto(cpText); clearPending(); updateSend();
     lbMode.innerHTML=SHARED?"Live &amp; f&uuml;r alle sichtbar &middot; <b>verbunden</b>"
       :"Lokaler Modus &middot; nur auf diesem Ger&auml;t (siehe <b>config.js</b>)";
@@ -1032,6 +1141,68 @@
   $("open-profile").addEventListener("click",openProfile);
   lb.querySelectorAll("[data-close]").forEach(function(el){ el.addEventListener("click",closeProfile); });
 
+  /* ================= BEWERTUNG (Slider im Profil) ================= */
+  var rateRows=$("rate-rows"), rateSend=$("rate-send"), rateMode=$("lb-rate-mode");
+  var rateInputs={}, ratePrefilled=false, rateSendT;
+  function paintSlider(inp){
+    var v=+inp.value; inp.style.setProperty("--p",v+"%");
+    var rv=inp.parentNode.querySelector(".rv"); if(rv) rv.textContent=v;
+  }
+  function buildRatePanel(){
+    rateRows.innerHTML=""; rateInputs={};
+    STAT_NAMES.forEach(function(label){
+      var row=document.createElement("div"); row.className="rate-row";
+      row.innerHTML='<span class="rl">'+label+'</span>'+
+        '<input class="rs" type="range" min="0" max="100" value="50" aria-label="'+label+'">'+
+        '<span class="rv">50</span>'+
+        '<span class="ra" data-stat="'+label+'">–</span>';
+      var inp=row.querySelector(".rs"); inp.setAttribute("data-stat",label);
+      inp.addEventListener("input",function(){ paintSlider(inp); });
+      rateRows.appendChild(row); rateInputs[label]=inp; paintSlider(inp);
+    });
+  }
+  function setSlidersFrom(mine){
+    mine=mine||{};
+    STAT_NAMES.forEach(function(label){
+      var inp=rateInputs[label]; if(!inp) return;
+      if(mine[label]!=null) inp.value=mine[label];
+      paintSlider(inp);
+    });
+    if(Object.keys(mine).length) rateSend.textContent="Bewertung aktualisieren";
+  }
+  function updateRateAvgs(agg){
+    var avgs=(agg&&agg.avgs)||{}, counts=(agg&&agg.counts)||{};
+    STAT_NAMES.forEach(function(label){
+      var el=rateRows.querySelector('.ra[data-stat="'+label+'"]'); if(!el) return;
+      var n=counts[label]||0;
+      el.innerHTML=n?('Ø '+avgs[label]+' <span class="rac">·'+n+'</span>'):'<span class="rac">0 Votes</span>';
+    });
+  }
+  function resetRateSend(){
+    clearTimeout(rateSendT);
+    rateSend.disabled=false; rateSend.classList.remove("saved");
+    rateSend.textContent="Bewertung abschicken";
+  }
+  rateSend.addEventListener("click",function(){
+    if(!curMemberName) return;
+    var m=curMemberName, vals={};
+    STAT_NAMES.forEach(function(label){ if(rateInputs[label]) vals[label]=+rateInputs[label].value; });
+    var prev=rateSend.textContent; rateSend.disabled=true; rateSend.textContent="…";
+    store.setRating(m,vals).then(function(){
+      rateSend.classList.add("saved"); rateSend.textContent="Gespeichert ✓";
+      try{ snd.coin(); }catch(e){}
+      burstFromEl(rateSend,{n:22}); showToast("✓ Bewertung gespeichert");
+      refresh();
+      clearTimeout(rateSendT); rateSendT=setTimeout(function(){
+        rateSend.disabled=false; rateSend.classList.remove("saved");
+        rateSend.textContent="Bewertung aktualisieren";
+      },1400);
+    }).catch(function(){
+      rateSend.disabled=false; rateSend.textContent=prev;
+      showToast("Bewertung fehlgeschlagen — Tabelle angelegt?");
+    });
+  });
+
   /* ================= REGELN-MODAL ================= */
   var rb=$("rulesbox");
   $("rules-btn").addEventListener("click",function(){
@@ -1040,10 +1211,21 @@
   rb.querySelectorAll("[data-close]").forEach(function(el){ el.addEventListener("click",function(){
     rb.classList.remove("open"); rb.setAttribute("aria-hidden","true");
   }); });
+
+  /* ================= BANNER-MODAL ================= */
+  var bb=$("bannerbox");
+  $("banner-btn").addEventListener("click",function(){
+    bb.classList.add("open"); bb.setAttribute("aria-hidden","false"); try{ snd.open(); }catch(e){}
+  });
+  bb.querySelectorAll("[data-close]").forEach(function(el){ el.addEventListener("click",function(){
+    bb.classList.remove("open"); bb.setAttribute("aria-hidden","true");
+  }); });
+
   window.addEventListener("keydown",function(e){
     if(e.key!=="Escape") return;
     if(lb.classList.contains("open")) closeProfile();
     if(rb.classList.contains("open")){ rb.classList.remove("open"); rb.setAttribute("aria-hidden","true"); }
+    if(bb.classList.contains("open")){ bb.classList.remove("open"); bb.setAttribute("aria-hidden","true"); }
   });
 
   /* ================= COMPOSER ================= */
@@ -1095,7 +1277,7 @@
       var st=ch.presenceState(), n=Object.keys(st).length;
       pill.classList.add("show");
       cnt.textContent=n;
-      label.textContent=(n===1?"Keks online":"Kek's online");
+      label.textContent=(n===1?"Kek online":"Kek online");
     });
     ch.subscribe(function(status){ if(status==="SUBSCRIBED"){ ch.track({at:Date.now()}); } });
     addEventListener("beforeunload",function(){ try{ ch.untrack(); }catch(e){} });
