@@ -1,0 +1,721 @@
+<!doctype html>
+<html lang="de">
+<head>
+<!-- MM Teamspeak — Voting. Unterseite: Spiele-Abstimmung, Gluecksrad, Zitate-Wand. -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MM Voting — Abstimmung, Glücksrad &amp; Zitate</title>
+<meta name="description" content="MM Teamspeak — Abstimmung: Was spielen wir heute?">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#05030A">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;900&family=Space+Grotesk:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<style>
+  :root{
+    --bg:#05030A; --panel:#0D0716; --panel2:#140B22; --line:#2A1C44;
+    --ink:#F1EBFF; --muted:#8E80AC;
+    --violet:#9B4DFF; --violet-hi:#B47BFF; --magenta:#FF2BD6; --cyan:#00E5FF;
+    --gold:#FFC24B; --live:#4ade80;
+    --ease:cubic-bezier(.2,.7,.2,1);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth;scrollbar-color:#5a3f86 transparent;scrollbar-width:thin}
+  body{min-height:100dvh;background:var(--bg);color:var(--ink);
+    font-family:"Space Grotesk",system-ui,sans-serif;line-height:1.5;
+    -webkit-font-smoothing:antialiased}
+  button{font-family:inherit;color:inherit;background:none;border:none;cursor:pointer}
+  img{max-width:100%;display:block}
+  ::selection{background:rgba(255,43,214,.5);color:#fff}
+  ::-webkit-scrollbar{width:10px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#5a3f86,var(--violet));
+    border-radius:9px;border:3px solid transparent;background-clip:padding-box}
+
+  /* ---------- Hintergrund (dezent, wie die Hauptseite) ---------- */
+  .bg{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+  .bg::before{content:"";position:absolute;width:64vmax;height:64vmax;left:-20vmax;top:-24vmax;
+    border-radius:50%;background:radial-gradient(circle,rgba(155,77,255,.17),transparent 62%);filter:blur(28px)}
+  .bg::after{content:"";position:absolute;width:56vmax;height:56vmax;right:-22vmax;bottom:-26vmax;
+    border-radius:50%;background:radial-gradient(circle,rgba(255,43,214,.11),transparent 62%);filter:blur(28px)}
+  .scanlines{position:fixed;inset:0;z-index:60;pointer-events:none;opacity:.35;
+    background:repeating-linear-gradient(0deg,rgba(0,0,0,.22) 0 1px,transparent 1px 3px)}
+  .vignette{position:fixed;inset:0;z-index:59;pointer-events:none;
+    background:radial-gradient(120% 100% at 50% 42%,transparent 55%,rgba(0,0,0,.5) 100%)}
+
+  /* ---------- Kopfzeile ---------- */
+  .vhead{position:sticky;top:0;z-index:10;display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+    padding:12px 18px;border-bottom:1px solid var(--line);
+    background:rgba(5,3,10,.78);backdrop-filter:blur(12px)}
+  .vhead::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:1px;
+    background:linear-gradient(90deg,transparent,var(--violet) 30%,var(--magenta) 70%,transparent);opacity:.55}
+  .brand{font-family:"Unbounded";font-weight:700;font-size:15px;letter-spacing:.02em;white-space:nowrap}
+  .brand .dot{color:var(--magenta)}
+  .hud-btn{font-family:"Space Mono";font-weight:700;font-size:12px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--ink);padding:9px 14px;border:1px solid var(--line);
+    border-radius:10px;background:rgba(20,11,34,.55);transition:.18s var(--ease);white-space:nowrap}
+  .hud-btn:hover{border-color:var(--violet);color:#fff;box-shadow:0 0 18px rgba(155,77,255,.35);transform:translateY(-1px)}
+  a.hud-btn{text-decoration:none;display:inline-flex;align-items:center}
+  .hud-btn.on{border-color:var(--violet);color:#fff;background:rgba(155,77,255,.16);
+    box-shadow:0 0 14px rgba(155,77,255,.3)}
+  .vnav{display:inline-flex;gap:8px;margin-left:auto}
+  .badge{display:inline-flex;align-items:center;gap:8px;font-family:"Space Mono";font-size:11px;
+    letter-spacing:.1em;text-transform:uppercase;padding:7px 12px;border-radius:999px;
+    border:1px solid var(--line);background:rgba(9,6,15,.6);color:var(--muted);white-space:nowrap;cursor:help}
+  .badge .bdot{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+  .badge.live{color:#e7f6e9;border-color:rgba(74,222,128,.4)}
+  .badge.live .bdot{background:var(--live);box-shadow:0 0 0 0 rgba(74,222,128,.6);animation:pulseG 1.6s infinite}
+  @keyframes pulseG{70%{box-shadow:0 0 0 10px rgba(74,222,128,0)}100%{box-shadow:0 0 0 0 rgba(74,222,128,0)}}
+
+  /* ---------- Layout / Karten ---------- */
+  main{position:relative;z-index:1;max-width:860px;margin:0 auto;padding:26px 18px 70px;
+    display:grid;gap:22px}
+  .card{background:rgba(13,7,22,.86);border:1px solid var(--line);border-radius:14px;
+    padding:22px 22px 24px;scroll-margin-top:76px}
+  .card h2{font-family:"Unbounded";font-weight:700;font-size:19px;letter-spacing:.01em;
+    text-transform:uppercase;margin-bottom:4px}
+  .card h2 .accent{color:var(--violet-hi)}
+  .card .sub{color:var(--muted);font-size:14px;margin-bottom:18px}
+
+  /* ---------- Formulare ---------- */
+  .frow{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+  .frow input,.frow textarea{flex:1 1 220px;min-width:0;background:var(--panel2);color:var(--ink);
+    border:1px solid var(--line);border-radius:10px;padding:11px 14px;font-family:inherit;
+    font-size:14.5px;transition:border-color .18s,box-shadow .18s;resize:vertical}
+  .frow input::placeholder,.frow textarea::placeholder{color:var(--muted)}
+  .frow input:focus,.frow textarea:focus{outline:none;border-color:var(--violet);
+    box-shadow:0 0 0 3px rgba(155,77,255,.18)}
+  .abtn{position:relative;overflow:hidden;font-family:"Space Mono";font-weight:700;font-size:12.5px;
+    letter-spacing:.12em;text-transform:uppercase;color:#fff;padding:12px 20px;
+    background:linear-gradient(100deg,var(--violet),var(--magenta));
+    clip-path:polygon(9px 0,100% 0,100% calc(100% - 9px),calc(100% - 9px) 100%,0 100%,0 9px);
+    box-shadow:0 10px 28px rgba(155,77,255,.35);transition:transform .16s var(--ease),box-shadow .2s,opacity .2s}
+  .abtn::before{content:"";position:absolute;inset:0;transform:translateX(-130%);
+    background:linear-gradient(110deg,transparent,rgba(255,255,255,.35) 50%,transparent 65%);
+    transition:transform .5s ease}
+  .abtn:hover{transform:translateY(-2px);box-shadow:0 14px 36px rgba(255,43,214,.45)}
+  .abtn:hover::before{transform:translateX(130%)}
+  .abtn:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+
+  /* ---------- Abstimmung ---------- */
+  .plist{display:grid;gap:10px}
+  .prow{position:relative;text-align:left;width:100%;padding:12px 14px;border:1px solid var(--line);
+    border-radius:12px;background:rgba(20,11,34,.4);cursor:pointer;
+    transition:border-color .18s,box-shadow .18s,transform .16s var(--ease)}
+  .prow:hover{border-color:var(--violet);box-shadow:0 0 16px rgba(155,77,255,.22);transform:translateY(-1px)}
+  .prow.mine{border-color:rgba(255,43,214,.55);background:rgba(255,43,214,.07)}
+  .prow .top{display:flex;align-items:baseline;gap:10px;margin-bottom:8px}
+  .prow .pname{font-weight:700;font-size:15.5px;min-width:0;overflow:hidden;
+    text-overflow:ellipsis;white-space:nowrap}
+  .prow .pcheck{display:none;font-family:"Space Mono";font-size:11px;letter-spacing:.08em;
+    color:var(--magenta);white-space:nowrap}
+  .prow.mine .pcheck{display:inline}
+  .prow .pcount{margin-left:auto;font-family:"Space Mono";font-size:12.5px;color:var(--muted);
+    font-variant-numeric:tabular-nums;white-space:nowrap}
+  .prow.lead .pcount{color:var(--gold)}
+  .prow .track{height:10px;border-radius:99px;background:rgba(155,77,255,.12);
+    border:1px solid rgba(155,77,255,.22);overflow:hidden}
+  .prow .fill{height:100%;width:0%;border-radius:99px;
+    background:linear-gradient(90deg,var(--violet),var(--magenta));
+    box-shadow:0 0 12px rgba(255,43,214,.55);transition:width .6s var(--ease)}
+  .prow.lead .fill{background:linear-gradient(90deg,var(--gold),#ff8a4d);
+    box-shadow:0 0 14px rgba(255,194,75,.7)}
+  .prow .pdel{position:absolute;top:8px;right:8px;width:26px;height:26px;border-radius:8px;
+    display:grid;place-items:center;color:var(--muted);font-size:15px;line-height:1;
+    opacity:0;transition:.18s}
+  .prow:hover .pdel{opacity:1}
+  .prow .pdel:hover{color:#fff;background:rgba(255,43,214,.25)}
+  .empty{color:var(--muted);font-style:italic;font-size:14px;padding:14px 4px}
+  .pfoot{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:16px}
+  .pfoot .ptotal{font-family:"Space Mono";font-size:12px;letter-spacing:.08em;color:var(--muted)}
+  .pfoot .hud-btn{margin-left:auto}
+
+  /* ---------- Gluecksrad ---------- */
+  .wheelwrap{display:grid;justify-items:center;gap:18px}
+  .wtoggle{display:flex;gap:8px}
+  #wheel-svg{width:min(340px,86vw);height:auto;overflow:visible}
+  #wheel-rotor{transform-origin:170px 170px}
+  #wheel-svg text{font-family:"Space Mono";font-size:12px;font-weight:700;fill:#fff;
+    paint-order:stroke;stroke:rgba(5,3,10,.65);stroke-width:2.5px;pointer-events:none}
+  .wresult{display:none;font-family:"Unbounded";font-weight:700;font-size:17px;text-align:center;
+    padding:12px 22px;border:1px solid rgba(155,77,255,.45);border-radius:12px;
+    background:rgba(20,11,34,.7);box-shadow:0 0 24px rgba(155,77,255,.3);max-width:100%;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .wresult.pop{display:block;animation:pop .45s var(--ease)}
+  .wresult .accent{color:var(--gold)}
+  @keyframes pop{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.07)}100%{transform:scale(1);opacity:1}}
+  .whint{color:var(--muted);font-size:13.5px;font-style:italic}
+
+  /* ---------- Zitate ---------- */
+  .qsort{display:flex;gap:8px;margin-bottom:14px}
+  .qlist{display:grid;gap:12px}
+  .qcard{border:1px solid var(--line);border-left:3px solid var(--magenta);border-radius:10px;
+    background:rgba(20,11,34,.45);padding:14px 16px}
+  .qtext{font-size:15.5px;overflow-wrap:anywhere}
+  .qtext::before{content:"\00BB"}
+  .qtext::after{content:"\00AB"}
+  .qmeta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:10px}
+  .qwho{font-family:"Space Mono";font-size:12px;letter-spacing:.06em;color:var(--violet-hi);
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:60%}
+  .qdate{font-family:"Space Mono";font-size:11px;color:var(--muted)}
+  .qvote{margin-left:auto;font-family:"Space Mono";font-weight:700;font-size:12px;
+    letter-spacing:.06em;padding:6px 12px;border:1px solid var(--line);border-radius:999px;
+    background:rgba(9,6,15,.5);color:var(--muted);transition:.18s;white-space:nowrap}
+  .qvote:hover{border-color:var(--violet);color:#fff}
+  .qvote.mine{border-color:rgba(255,43,214,.6);color:var(--magenta);background:rgba(255,43,214,.1)}
+
+  /* ---------- Toast ---------- */
+  .toast{position:fixed;left:50%;bottom:26px;z-index:80;transform:translateX(-50%) translateY(10px);
+    opacity:0;pointer-events:none;font-family:"Space Mono";font-size:13px;color:#fff;
+    background:rgba(20,11,34,.92);border:1px solid var(--violet);border-radius:10px;
+    padding:11px 18px;box-shadow:0 12px 34px rgba(0,0,0,.5);transition:.25s var(--ease);
+    max-width:88vw;text-align:center}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  @media (max-width:640px){
+    .vnav{display:none}
+    main{padding:18px 12px 60px}
+    .card{padding:16px 14px 18px}
+    .prow .pdel{opacity:1}
+    .pfoot .hud-btn{margin-left:0}
+  }
+</style>
+</head>
+<body>
+
+<div class="bg"></div>
+<div class="vignette"></div>
+<div class="scanlines"></div>
+
+<header class="vhead">
+  <a class="hud-btn" href="index.html">&larr; Crew</a>
+  <span class="brand">MM<span class="dot">.</span>VOTING</span>
+  <nav class="vnav">
+    <a class="hud-btn" href="#poll">Abstimmung</a>
+    <a class="hud-btn" href="#wheel">Gl&uuml;cksrad</a>
+    <a class="hud-btn" href="#quotes">Zitate</a>
+  </nav>
+  <span class="badge" id="mode-badge"><span class="bdot"></span><span id="mode-label">Verbinde&hellip;</span></span>
+</header>
+
+<main>
+
+  <!-- ============ ABSTIMMUNG ============ -->
+  <section id="poll" class="card">
+    <h2>Was spielen wir<span class="accent">?</span></h2>
+    <p class="sub">Schlag ein Spiel vor und stimm ab. Eine Stimme pro Person &mdash; Klick auf eine andere Option verschiebt deine Stimme, Klick auf die eigene zieht sie zur&uuml;ck.</p>
+    <div class="frow">
+      <input id="poll-input" maxlength="40" placeholder="Spiel vorschlagen&hellip;" autocomplete="off">
+      <button class="abtn" id="poll-add" type="button">Vorschlagen</button>
+    </div>
+    <div class="plist" id="poll-list"></div>
+    <div class="pfoot">
+      <span class="ptotal" id="poll-total"></span>
+      <button class="hud-btn" id="poll-reset" type="button">Neue Runde starten</button>
+    </div>
+  </section>
+
+  <!-- ============ GLUECKSRAD ============ -->
+  <section id="wheel" class="card">
+    <h2>Gl&uuml;cksrad</h2>
+    <p class="sub">Wenn ihr euch nicht einigen k&ouml;nnt: Das Rad entscheidet. W&auml;hlt zwischen den vorgeschlagenen Spielen oder der Crew.</p>
+    <div class="wheelwrap">
+      <div class="wtoggle">
+        <button class="hud-btn on" id="wsrc-games" type="button">Spiele</button>
+        <button class="hud-btn" id="wsrc-crew" type="button">Crew</button>
+      </div>
+      <svg id="wheel-svg" viewBox="0 0 340 340" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <circle cx="170" cy="170" r="158" fill="rgba(20,11,34,.6)" stroke="#2A1C44" stroke-width="2"></circle>
+        <g id="wheel-rotor"></g>
+        <circle cx="170" cy="170" r="26" fill="#0D0716" stroke="#9B4DFF" stroke-width="2"></circle>
+        <polygon points="158,6 182,6 170,34" fill="#FF2BD6" stroke="#05030A" stroke-width="2"></polygon>
+      </svg>
+      <div class="whint" id="wheel-hint"></div>
+      <button class="abtn" id="wheel-spin" type="button">Drehen</button>
+      <div class="wresult" id="wheel-result"></div>
+    </div>
+  </section>
+
+  <!-- ============ ZITATE ============ -->
+  <section id="quotes" class="card">
+    <h2>Zitate-Wand</h2>
+    <p class="sub">Legend&auml;re Spr&uuml;che aus dem Teamspeak &mdash; festhalten, bevor sie vergessen werden. Pfeil hoch = Stimme daf&uuml;r.</p>
+    <div class="frow">
+      <textarea id="q-text" maxlength="280" rows="2" placeholder="Was wurde gesagt?"></textarea>
+    </div>
+    <div class="frow">
+      <input id="q-author" maxlength="40" placeholder="Wer hat's gesagt?" autocomplete="off">
+      <button class="abtn" id="q-add" type="button">Eintragen</button>
+    </div>
+    <div class="qsort">
+      <button class="hud-btn on" id="qsort-top" type="button">Beliebteste</button>
+      <button class="hud-btn" id="qsort-new" type="button">Neueste</button>
+    </div>
+    <div class="qlist" id="quote-list"></div>
+  </section>
+
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  function $(id){ return document.getElementById(id); }
+  function lsGet(k,d){ try{ var v=JSON.parse(localStorage.getItem(k)); return v==null?d:v; }catch(e){ return d; } }
+  function lsSet(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
+  function uid(){ return "l"+Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
+  function debounce(fn,ms){ var t; return function(){ clearTimeout(t); t=setTimeout(fn,ms); }; }
+
+  var CREW = ["Aysn","Michi","Marizz","Metin","Berkay","Fafa","Nasch","Evo","Ahmed","Burak","Zlado"];
+
+  /* Anonyme, geraetegebundene Voter-ID — derselbe Key wie auf der Hauptseite */
+  var VOTER = lsGet("mm_voter","");
+  if(!VOTER){ VOTER = "v"+Date.now().toString(36)+Math.random().toString(36).slice(2,8); lsSet("mm_voter",VOTER); }
+
+  /* ================= SUPABASE / LOKALER STORE ================= */
+  var forceLocal = new URLSearchParams(location.search).has("local");
+  var CFG=window.MM_CONFIG||{}, sb=null;
+  if(!forceLocal && CFG.SUPABASE_URL && CFG.SUPABASE_ANON_KEY && window.supabase && window.supabase.createClient){
+    try{ sb=window.supabase.createClient(CFG.SUPABASE_URL,CFG.SUPABASE_ANON_KEY); }catch(e){ sb=null; }
+  }
+  var SHARED=!!sb;
+
+  /* ================= SOUND (WebAudio, nach User-Geste) ================= */
+  var actx;
+  function ctx(){
+    if(!actx){ var AC=window.AudioContext||window.webkitAudioContext; if(AC) actx=new AC(); }
+    if(actx && actx.state==="suspended") actx.resume();
+    return actx;
+  }
+  function tone(freq,t0,dur,vol,type){
+    var c=ctx(); if(!c) return;
+    var o=c.createOscillator(), g=c.createGain();
+    o.type=type||"square"; o.frequency.value=freq;
+    o.connect(g); g.connect(c.destination);
+    var s=c.currentTime+t0;
+    g.gain.setValueAtTime(0.0001,s);
+    g.gain.exponentialRampToValueAtTime(vol,s+0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001,s+dur);
+    o.start(s); o.stop(s+dur+0.03);
+  }
+  var snd = {
+    blip: function(){ tone(880,0,.07,.05,"sine"); },
+    coin: function(){ tone(988,0,.08,.08,"square"); tone(1319,.08,.22,.08,"square"); },
+    win:  function(){ tone(523,0,.09,.09,"square"); tone(659,.09,.09,.09,"square"); tone(784,.18,.2,.09,"square"); }
+  };
+
+  /* ================= TOAST / BADGE ================= */
+  var toastT;
+  function toast(msg){
+    var t=$("toast"); t.textContent=msg; t.classList.add("show");
+    clearTimeout(toastT); toastT=setTimeout(function(){ t.classList.remove("show"); },2600);
+  }
+  function setBadge(live,label,hint){
+    var b=$("mode-badge");
+    b.classList.toggle("live",live);
+    $("mode-label").textContent=label;
+    b.title=hint||"";
+  }
+
+  /* ================= STORE (Supabase geteilt / localStorage lokal) ================= */
+  function chk(r){ if(r.error) throw r.error; return r; }
+
+  var store = {
+    pollLoad: function(){
+      if(SHARED){
+        return sb.from("poll_options")
+          .select("id,name,created_at,poll_votes(voter)")
+          .order("created_at",{ascending:true})
+          .then(chk).then(function(r){
+            var myVote=null, total=0;
+            var opts=(r.data||[]).map(function(o){
+              var vs=o.poll_votes||[]; total+=vs.length;
+              var mine=vs.some(function(v){ return v.voter===VOTER; });
+              if(mine) myVote=o.id;
+              return {id:o.id,name:o.name,votes:vs.length,mine:mine};
+            });
+            return {options:opts,total:total,myVote:myVote};
+          });
+      }
+      var d=lsGet("mm_poll",{options:[],myVote:null});
+      var opts=d.options.map(function(o){
+        return {id:o.id,name:o.name,votes:o.id===d.myVote?1:0,mine:o.id===d.myVote};
+      });
+      return Promise.resolve({options:opts,total:d.myVote?1:0,myVote:d.myVote});
+    },
+    pollAdd: function(name){
+      if(SHARED) return sb.from("poll_options").insert({name:name}).then(chk);
+      var d=lsGet("mm_poll",{options:[],myVote:null});
+      d.options.push({id:uid(),name:name});
+      lsSet("mm_poll",d);
+      return Promise.resolve();
+    },
+    pollVote: function(id,wasMine){
+      if(SHARED){
+        if(wasMine) return sb.from("poll_votes").delete().eq("voter",VOTER).then(chk);
+        return sb.from("poll_votes").upsert({voter:VOTER,option_id:id},{onConflict:"voter"}).then(chk);
+      }
+      var d=lsGet("mm_poll",{options:[],myVote:null});
+      d.myVote = wasMine ? null : id;
+      lsSet("mm_poll",d);
+      return Promise.resolve();
+    },
+    pollRemove: function(id){
+      if(SHARED) return sb.from("poll_options").delete().eq("id",id).then(chk);
+      var d=lsGet("mm_poll",{options:[],myVote:null});
+      d.options=d.options.filter(function(o){ return o.id!==id; });
+      if(d.myVote===id) d.myVote=null;
+      lsSet("mm_poll",d);
+      return Promise.resolve();
+    },
+    pollReset: function(){
+      /* Supabase-delete braucht immer einen Filter — daher das gte auf created_at */
+      if(SHARED) return sb.from("poll_votes").delete().gte("created_at","1970-01-01").then(chk);
+      var d=lsGet("mm_poll",{options:[],myVote:null});
+      d.myVote=null; lsSet("mm_poll",d);
+      return Promise.resolve();
+    },
+    quoteLoad: function(){
+      if(SHARED){
+        return sb.from("quotes")
+          .select("id,text,author,created_at,quote_votes(voter)")
+          .order("created_at",{ascending:false})
+          .then(chk).then(function(r){
+            return (r.data||[]).map(function(q){
+              var vs=q.quote_votes||[];
+              return {id:q.id,text:q.text,author:q.author,created_at:q.created_at,
+                votes:vs.length,mine:vs.some(function(v){ return v.voter===VOTER; })};
+            });
+          });
+      }
+      var list=lsGet("mm_quotes",[]);
+      return Promise.resolve(list.map(function(q){
+        var vs=q.voters||[];
+        return {id:q.id,text:q.text,author:q.author,created_at:q.created_at,
+          votes:vs.length,mine:vs.indexOf(VOTER)>=0};
+      }));
+    },
+    quoteAdd: function(text,author){
+      if(SHARED) return sb.from("quotes").insert({text:text,author:author}).then(chk);
+      var list=lsGet("mm_quotes",[]);
+      list.push({id:uid(),text:text,author:author,created_at:new Date().toISOString(),voters:[]});
+      lsSet("mm_quotes",list);
+      return Promise.resolve();
+    },
+    quoteVote: function(id,wasMine){
+      if(SHARED){
+        if(wasMine) return sb.from("quote_votes").delete().eq("quote_id",id).eq("voter",VOTER).then(chk);
+        return sb.from("quote_votes").insert({quote_id:id,voter:VOTER}).then(chk);
+      }
+      var list=lsGet("mm_quotes",[]);
+      list.forEach(function(q){
+        if(q.id!==id) return;
+        q.voters=q.voters||[];
+        if(wasMine) q.voters=q.voters.filter(function(v){ return v!==VOTER; });
+        else if(q.voters.indexOf(VOTER)<0) q.voters.push(VOTER);
+      });
+      lsSet("mm_quotes",list);
+      return Promise.resolve();
+    },
+    subscribe: function(cb){
+      if(!SHARED) return;
+      var ch=sb.channel("mm-voting");
+      ["poll_options","poll_votes","quotes","quote_votes"].forEach(function(t){
+        ch.on("postgres_changes",{event:"*",schema:"public",table:t},cb);
+      });
+      ch.subscribe();
+    }
+  };
+
+  /* ================= RENDER: ABSTIMMUNG ================= */
+  var pollState={options:[],total:0,myVote:null};
+
+  function renderPoll(data){
+    pollState=data;
+    var list=$("poll-list");
+    list.textContent="";
+    if(!data.options.length){
+      var e=document.createElement("div");
+      e.className="empty";
+      e.textContent="Noch keine Vorschläge — trag das erste Spiel ein.";
+      list.appendChild(e);
+    }
+    var max=0;
+    data.options.forEach(function(o){ if(o.votes>max) max=o.votes; });
+    var fills=[];
+    data.options.forEach(function(o){
+      var pct = data.total ? Math.round(o.votes/data.total*100) : 0;
+      var row=document.createElement("div");
+      row.className="prow"+(o.mine?" mine":"")+(max>0&&o.votes===max?" lead":"");
+      row.setAttribute("role","button");
+      row.tabIndex=0;
+
+      var top=document.createElement("div"); top.className="top";
+      var nm=document.createElement("span"); nm.className="pname"; nm.textContent=o.name;
+      var ck=document.createElement("span"); ck.className="pcheck"; ck.textContent="✓ deine Stimme";
+      var ct=document.createElement("span"); ct.className="pcount";
+      ct.textContent=o.votes+" · "+pct+" %";
+      top.appendChild(nm); top.appendChild(ck); top.appendChild(ct);
+
+      var track=document.createElement("div"); track.className="track";
+      var fill=document.createElement("div"); fill.className="fill";
+      track.appendChild(fill);
+      fills.push([fill,pct]);
+
+      var del=document.createElement("button");
+      del.className="pdel"; del.type="button"; del.textContent="×";
+      del.title="Option entfernen";
+      del.addEventListener("click",function(ev){
+        ev.stopPropagation();
+        if(!confirm("„"+o.name+"“ von der Liste entfernen?")) return;
+        store.pollRemove(o.id).then(refreshAll).catch(fail);
+      });
+
+      function vote(){
+        snd.blip();
+        store.pollVote(o.id,o.mine).then(refreshAll).catch(fail);
+      }
+      row.addEventListener("click",vote);
+      row.addEventListener("keydown",function(ev){
+        if(ev.key==="Enter"||ev.key===" "){ ev.preventDefault(); vote(); }
+      });
+
+      row.appendChild(top); row.appendChild(track); row.appendChild(del);
+      list.appendChild(row);
+    });
+    /* Balken erst im naechsten Frame fuellen, damit die Breiten-Transition greift */
+    requestAnimationFrame(function(){ requestAnimationFrame(function(){
+      fills.forEach(function(f){ f[0].style.width=f[1]+"%"; });
+    }); });
+    $("poll-total").textContent = data.total===1 ? "1 Stimme insgesamt" : data.total+" Stimmen insgesamt";
+    if(wheelSource==="games" && !spinning) renderWheel(gameEntries());
+  }
+
+  function addGame(){
+    var inp=$("poll-input");
+    var name=inp.value.replace(/\s+/g," ").trim();
+    if(!name) return;
+    var dup=pollState.options.some(function(o){ return o.name.toLowerCase()===name.toLowerCase(); });
+    if(dup){ toast("„"+name+"“ steht schon auf der Liste."); return; }
+    busy($("poll-add"), store.pollAdd(name).then(function(){
+      inp.value=""; snd.coin(); return refreshAll();
+    }).catch(function(err){
+      if(err && err.code==="23505"){ toast("„"+name+"“ steht schon auf der Liste."); refreshAll(); }
+      else fail(err);
+    }));
+  }
+
+  /* ================= RENDER: ZITATE ================= */
+  var quoteSort="top", quoteState=[];
+
+  function renderQuotes(list){
+    quoteState=list;
+    var sorted=list.slice().sort(function(a,b){
+      if(quoteSort==="top" && b.votes!==a.votes) return b.votes-a.votes;
+      return String(b.created_at||"").localeCompare(String(a.created_at||""));
+    });
+    var box=$("quote-list");
+    box.textContent="";
+    if(!sorted.length){
+      var e=document.createElement("div");
+      e.className="empty";
+      e.textContent="Noch keine Zitate — wer liefert das erste?";
+      box.appendChild(e);
+      return;
+    }
+    sorted.forEach(function(q){
+      var card=document.createElement("div"); card.className="qcard";
+      var tx=document.createElement("div"); tx.className="qtext"; tx.textContent=q.text;
+      var meta=document.createElement("div"); meta.className="qmeta";
+      var who=document.createElement("span"); who.className="qwho"; who.textContent="— "+q.author;
+      var dt=document.createElement("span"); dt.className="qdate";
+      try{ dt.textContent=new Date(q.created_at).toLocaleDateString("de-DE"); }catch(e2){}
+      var vb=document.createElement("button");
+      vb.className="qvote"+(q.mine?" mine":""); vb.type="button";
+      vb.textContent="▲ "+q.votes;
+      vb.title=q.mine?"Stimme zurückziehen":"Dafür stimmen";
+      vb.addEventListener("click",function(){
+        snd.blip();
+        store.quoteVote(q.id,q.mine).then(refreshAll).catch(fail);
+      });
+      meta.appendChild(who); meta.appendChild(dt); meta.appendChild(vb);
+      card.appendChild(tx); card.appendChild(meta);
+      box.appendChild(card);
+    });
+  }
+
+  function addQuote(){
+    var tEl=$("q-text"), aEl=$("q-author");
+    var text=tEl.value.replace(/\s+/g," ").trim();
+    var author=aEl.value.replace(/\s+/g," ").trim();
+    if(!text){ toast("Zitat fehlt noch."); return; }
+    if(!author){ toast("Und wer hat's gesagt?"); return; }
+    busy($("q-add"), store.quoteAdd(text,author).then(function(){
+      tEl.value=""; aEl.value=""; snd.coin(); return refreshAll();
+    }).catch(fail));
+  }
+
+  /* ================= GLUECKSRAD ================= */
+  var PAL=["#9B4DFF","#FF2BD6","#00E5FF","#FFC24B","#4ade80","#ff8a4d"];
+  var wheelSource="games", spinning=false, rot=0, wheelEntries=[];
+
+  function gameEntries(){
+    return pollState.options.map(function(o){ return o.name; });
+  }
+  function polar(deg,r){
+    var rad=(deg-90)*Math.PI/180; /* 0 Grad = 12 Uhr, im Uhrzeigersinn */
+    return [170+r*Math.cos(rad),170+r*Math.sin(rad)];
+  }
+  function renderWheel(entries){
+    wheelEntries=entries;
+    var rotor=$("wheel-rotor");
+    rotor.textContent="";
+    var ok=entries.length>=2;
+    $("wheel-spin").disabled=!ok;
+    $("wheel-hint").textContent = ok ? "" :
+      (wheelSource==="games"
+        ? "Mindestens 2 Spiele nötig — oben vorschlagen oder auf „Crew“ umschalten."
+        : "Mindestens 2 Einträge nötig.");
+    if(!ok) return;
+    var n=entries.length, seg=360/n, R=155;
+    entries.forEach(function(name,i){
+      var a0=i*seg, a1=(i+1)*seg;
+      var p0=polar(a0,R), p1=polar(a1,R);
+      var path=document.createElementNS("http://www.w3.org/2000/svg","path");
+      path.setAttribute("d","M170 170 L"+p0[0]+" "+p0[1]+" A"+R+" "+R+" 0 0 1 "+p1[0]+" "+p1[1]+" Z");
+      var col=PAL[i%PAL.length];
+      /* Vermeidet gleiche Farbe von letztem und erstem Segment */
+      if(i===n-1 && i%PAL.length===0) col=PAL[2];
+      path.setAttribute("fill",col);
+      path.setAttribute("fill-opacity","0.82");
+      path.setAttribute("stroke","#05030A");
+      path.setAttribute("stroke-width","2");
+      path.dataset.idx=i;
+      rotor.appendChild(path);
+
+      var mid=a0+seg/2;
+      var tp=polar(mid,100);
+      var text=document.createElementNS("http://www.w3.org/2000/svg","text");
+      text.setAttribute("x",tp[0]); text.setAttribute("y",tp[1]);
+      text.setAttribute("text-anchor","middle");
+      text.setAttribute("dominant-baseline","middle");
+      var rdeg=mid-90+(mid>180?180:0); /* linke Haelfte umdrehen, sonst kopfueber */
+      text.setAttribute("transform","rotate("+rdeg+" "+tp[0]+" "+tp[1]+")");
+      var label=name.length>12 ? name.slice(0,11)+"…" : name;
+      text.textContent=label;
+      rotor.appendChild(text);
+    });
+  }
+  function spin(){
+    if(spinning || wheelEntries.length<2) return;
+    spinning=true;
+    $("wheel-spin").disabled=true;
+    $("wheel-result").classList.remove("pop");
+    var entries=wheelEntries.slice(); /* Einfrieren fuer diese Drehung */
+    var n=entries.length, seg=360/n;
+    rot += 5*360 + Math.random()*360;
+    var rotor=$("wheel-rotor");
+    rotor.style.transition="transform 4.5s cubic-bezier(.15,.85,.15,1)";
+    rotor.style.transform="rotate("+rot+"deg)";
+    snd.blip();
+    var done=false;
+    function finish(){
+      if(done) return; done=true;
+      spinning=false;
+      /* Zeiger steht oben (0 Grad): welches Segment liegt nach der Drehung dort? */
+      var A=(360-(rot%360))%360;
+      var idx=Math.floor(A/seg)%n;
+      Array.prototype.forEach.call(rotor.querySelectorAll("path"),function(p){
+        var win=Number(p.dataset.idx)===idx;
+        p.setAttribute("fill-opacity",win?"1":"0.55");
+        p.setAttribute("stroke",win?"#fff":"#05030A");
+      });
+      var res=$("wheel-result");
+      res.textContent="";
+      var lbl=document.createElement("span"); lbl.textContent="Ergebnis: ";
+      var wn=document.createElement("span"); wn.className="accent"; wn.textContent=entries[idx];
+      res.appendChild(lbl); res.appendChild(wn);
+      res.classList.add("pop");
+      snd.win();
+      $("wheel-spin").disabled=false;
+      /* Nach der Drehung ggf. verpasste Aenderungen nachziehen */
+      if(wheelSource==="games") renderWheel(gameEntries());
+    }
+    rotor.addEventListener("transitionend",finish,{once:true});
+    setTimeout(finish,4900); /* Fallback, falls transitionend nicht feuert */
+  }
+  function setWheelSource(src){
+    if(spinning) return;
+    wheelSource=src;
+    $("wsrc-games").classList.toggle("on",src==="games");
+    $("wsrc-crew").classList.toggle("on",src==="crew");
+    $("wheel-result").classList.remove("pop");
+    renderWheel(src==="games" ? gameEntries() : CREW.slice());
+  }
+
+  /* ================= LADEN / EVENTS / BOOT ================= */
+  function fail(err){
+    if(err) console.error(err);
+    toast("Das hat nicht geklappt — versuch's nochmal.");
+  }
+  function busy(btn,promise){
+    btn.disabled=true;
+    promise.then(function(){ btn.disabled=false; },function(){ btn.disabled=false; });
+  }
+  function refreshAll(){
+    return Promise.all([store.pollLoad(),store.quoteLoad()]).then(function(res){
+      renderPoll(res[0]);
+      renderQuotes(res[1]);
+    }).catch(function(err){ console.error(err); });
+  }
+
+  $("poll-add").addEventListener("click",addGame);
+  $("poll-input").addEventListener("keydown",function(ev){ if(ev.key==="Enter") addGame(); });
+  $("poll-reset").addEventListener("click",function(){
+    if(!confirm("Alle Stimmen löschen und eine neue Runde starten? Die Spiele-Liste bleibt erhalten.")) return;
+    busy($("poll-reset"), store.pollReset().then(refreshAll).catch(fail));
+  });
+  $("q-add").addEventListener("click",addQuote);
+  $("q-author").addEventListener("keydown",function(ev){ if(ev.key==="Enter") addQuote(); });
+  $("qsort-top").addEventListener("click",function(){
+    quoteSort="top";
+    $("qsort-top").classList.add("on"); $("qsort-new").classList.remove("on");
+    renderQuotes(quoteState);
+  });
+  $("qsort-new").addEventListener("click",function(){
+    quoteSort="new";
+    $("qsort-new").classList.add("on"); $("qsort-top").classList.remove("on");
+    renderQuotes(quoteState);
+  });
+  $("wheel-spin").addEventListener("click",spin);
+  $("wsrc-games").addEventListener("click",function(){ setWheelSource("games"); });
+  $("wsrc-crew").addEventListener("click",function(){ setWheelSource("crew"); });
+
+  function bootLocal(hint){
+    SHARED=false; sb=null;
+    setBadge(false,"Nur dieses Gerät",hint);
+    refreshAll();
+  }
+  if(sb){
+    /* Boot-Probe: existieren die Tabellen schon? Sonst lokal weiterlaufen. */
+    sb.from("poll_options").select("id").limit(1).then(function(r){
+      if(r.error){
+        bootLocal("Die Voting-Tabellen fehlen noch in Supabase — SQL aus SUPABASE_SETUP.md (Abschnitt 5) ausführen.");
+        toast("Noch nicht mit Supabase verbunden — Stimmen gelten nur auf diesem Gerät.");
+      }else{
+        setBadge(true,"Live","Verbunden — alle sehen dieselben Stimmen in Echtzeit.");
+        store.subscribe(debounce(refreshAll,250));
+        refreshAll();
+      }
+    },function(){ bootLocal("Keine Verbindung zu Supabase."); });
+  }else{
+    bootLocal(forceLocal ? "Lokal-Modus erzwungen (?local=1)." : "Keine Supabase-Konfiguration gefunden (config.js).");
+  }
+})();
+</script>
+</body>
+</html>
