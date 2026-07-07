@@ -149,6 +149,9 @@
     border-radius:10px;background:rgba(20,11,34,.55);transition:.18s var(--ease);white-space:nowrap}
   .hud-btn:hover{border-color:var(--violet);color:#fff;box-shadow:0 0 18px rgba(155,77,255,.35);transform:translateY(-1px)}
   a.hud-btn{text-decoration:none;display:inline-flex;align-items:center}
+  /* Arena-Button: Magenta-Akzent, damit die Fighting-Game-Unterseite auffällt */
+  .hud-btn-arena{color:var(--magenta);border-color:rgba(255,43,214,.45);gap:6px}
+  .hud-btn-arena:hover{border-color:var(--magenta);color:#fff;box-shadow:0 0 18px rgba(255,43,214,.4)}
 
   /* ================= SELECT-LAYOUT ================= */
   #select{flex:1 1 auto;display:grid;grid-template-columns:minmax(0,1fr) clamp(320px,34vw,430px);min-height:0}
@@ -544,6 +547,7 @@
   <header id="hud">
     <span class="brand">MM<span class="dot">.</span>TEAMSPEAK</span>
     <a class="hud-btn" href="voting.html">Voting</a>
+    <a class="hud-btn hud-btn-arena" href="arena.html">⚔ Arena</a>
     <span class="ticker" id="ticker"><span class="tdot"></span><span id="ticker-label">BIS PRIMETIME</span>&nbsp;<b id="ticker-time">--:--:--</b></span>
     <span class="presence" id="presence"><span class="pdot"></span><b class="pcount">0</b>&nbsp;<span class="plabel">Kek online</span></span>
     <button class="hud-btn" id="banner-btn" type="button">Banner</button>
